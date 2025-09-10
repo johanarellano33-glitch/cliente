@@ -7,6 +7,7 @@ public class Cliente2 {
 
     public static void main(String[] args) {
         try {
+            // Conexión al servidor
             Socket salida = new Socket("localhost", 8080);
             PrintWriter escritor = new PrintWriter(salida.getOutputStream(), true);
             BufferedReader lector = new BufferedReader(new InputStreamReader(salida.getInputStream()));
@@ -23,38 +24,31 @@ public class Cliente2 {
                 System.out.print("Selecciona una opción (1, 2 o 3): ");
                 String opcion = teclado.readLine();
                 escritor.println(opcion);
-
+                
                 if (opcion.equals("3")) {
                     break;
                 }
-
+                
                 // Solicitar usuario y contraseña
                 System.out.print("Usuario: ");
                 String usuario = teclado.readLine();
                 escritor.println(usuario);
-
+                
                 System.out.print("Contraseña: ");
                 String contrasena = teclado.readLine();
                 escritor.println(contrasena);
-
+                
                 // Recibir mensaje del servidor
                 String mensaje = lector.readLine();
                 System.out.println("Servidor: " + mensaje);
-
-                // Si el cliente se registró correctamente, lo redirigimos a iniciar sesión
-                if (mensaje.equals("¡Registro exitoso! Ahora puedes iniciar sesión.")) {
-                    System.out.println("Por favor, inicia sesión.");
-                    continue; // Vuelve al inicio para que el cliente inicie sesión
-                }
-
-                // Si el cliente se logueó correctamente, le da la opción de salir
-                if (mensaje.equals("Bienvenido al servidor, " + usuario + "!")) {
+                
+                // Verifica si la respuesta es un mensaje de bienvenida
+                if (mensaje.startsWith("Bienvenido al servidor")) {
+                    System.out.println("¡Has iniciado sesión correctamente!");
                     System.out.println("Escribe 'salir' para desconectarte.");
-                    while (!(cadena = teclado.readLine()).equalsIgnoreCase("salir")) {
-                        System.out.println("Comando inválido, escribe 'salir' para desconectarte.");
-                    }
-                    System.out.println("Desconectando...");
-                    break; // Termina el bucle y desconecta el cliente
+                    break;  // Aquí ya está dentro del servidor y listo para interactuar
+                } else {
+                    System.out.println("No se pudo iniciar sesión. Intenta de nuevo.");
                 }
             }
 
