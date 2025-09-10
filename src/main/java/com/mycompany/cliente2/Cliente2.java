@@ -12,11 +12,10 @@ public class Cliente2 {
             PrintWriter escritor = new PrintWriter(salida.getOutputStream(), true);
             BufferedReader lector = new BufferedReader(new InputStreamReader(salida.getInputStream()));
             BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
-            String cadena;
 
             while (true) {
                 // Opciones de acción
-                System.out.println("Bienvenido al sistema");
+                System.out.println("=== BIENVENIDO AL SISTEMA ===");
                 System.out.println("Seleccione una opción:");
                 System.out.println("1. Registrarse");
                 System.out.println("2. Iniciar sesión");
@@ -26,7 +25,9 @@ public class Cliente2 {
                 escritor.println(opcion);
                 
                 if (opcion.equals("3")) {
-                    break;
+                    String respuesta = lector.readLine();
+                    System.out.println(respuesta);
+                    break; // Salir del programa
                 }
                 
                 // Solicitar usuario y contraseña
@@ -42,52 +43,76 @@ public class Cliente2 {
                 String mensaje = lector.readLine();
                 System.out.println("Servidor: " + mensaje);
                 
-                // Si el cliente se logueó correctamente, le da la opción de salir
-                if (mensaje.equals("Bienvenido al servidor, " + usuario + "!")) {
-                    System.out.println("Escribe 'salir' para desconectarte.");
+                // Si el login fue exitoso
+                if (mensaje.contains("Bienvenido al servidor")) {
                     
-                    // Mostrar bandeja de entrada
-                    mostrarBandejaDeEntrada(lector);
+                    // Menú de mensajes
+                    while (true) {
+                        System.out.println("\n=== MENÚ DE MENSAJES ===");
+                        System.out.println("1. Ver bandeja de entrada");
+                        System.out.println("2. Enviar mensaje");
+                        System.out.println("3. Cerrar sesión");
+                        System.out.print("Selecciona una opción: ");
 
-                    // Enviar mensajes
-                    enviarMensaje(escritor, teclado, lector);
+                        String opcionMenu = teclado.readLine();
+                        escritor.println(opcionMenu);
 
-                    while (!(cadena = teclado.readLine()).equalsIgnoreCase("salir")) {
-                        System.out.println("Comando inválido, escribe 'salir' para desconectarte.");
+                        if (opcionMenu.equals("1")) {
+                            // Ver bandeja de entrada
+                            System.out.println("\n=== BANDEJA DE ENTRADA ===");
+                            String respuesta = lector.readLine();
+                            
+                            if (respuesta.equals("0 mensajes.")) {
+                                System.out.println("No tienes mensajes nuevos.");
+                            } else {
+                                System.out.println(respuesta);
+                                // Leer mensajes adicionales si los hay
+                                String siguienteMensaje;
+                                while ((siguienteMensaje = lector.readLine()) != null && 
+                                       !siguienteMensaje.equals("FIN_MENSAJES")) {
+                                    System.out.println(siguienteMensaje);
+                                }
+                            }
+                            
+                        } else if (opcionMenu.equals("2")) {
+                            // Enviar mensaje
+                            System.out.print("Escribe el destinatario: ");
+                            String destinatario = teclado.readLine();
+                            escritor.println(destinatario);
+
+                            System.out.print("Escribe tu mensaje: ");
+                            String mensajeEnvio = teclado.readLine();
+                            escritor.println(mensajeEnvio);
+
+                            // Recibir confirmación de envío del mensaje
+                            String respuesta = lector.readLine();
+                            if (respuesta.contains("Mensaje enviado")) {
+                                System.out.println("✓ " + respuesta);
+                            } else {
+                                System.out.println("✗ " + respuesta);
+                            }
+                            
+                        } else if (opcionMenu.equals("3")) {
+                            // Cerrar sesión
+                            String respuesta = lector.readLine();
+                            System.out.println(respuesta);
+                            break; // Volver al menú principal
+                            
+                        } else {
+                            String respuesta = lector.readLine();
+                            System.out.println(respuesta);
+                        }
                     }
-                    System.out.println("Desconectando...");
-                    break; // Termina el bucle y desconecta el cliente
                 }
+                // Si hay error en credenciales, el bucle principal continúa
             }
 
             // Cerrar recursos
             salida.close();
             System.out.println("Conexión cerrada.");
         } catch (Exception e) {
+            System.err.println("Error en el cliente: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    // Mostrar la bandeja de entrada del usuario
-    private static void mostrarBandejaDeEntrada(BufferedReader lector) throws IOException {
-        String mensaje;
-        while (!(mensaje = lector.readLine()).equals("No tienes mensajes.") && !mensaje.equals("No tienes mensajes nuevos.")) {
-            System.out.println(mensaje);
-        }
-    }
-
-    // Enviar un mensaje a otro usuario
-    private static void enviarMensaje(PrintWriter escritor, BufferedReader teclado, BufferedReader lector) throws IOException {
-        System.out.println("Escribe el nombre de usuario al que deseas enviar un mensaje:");
-        String destinatario = teclado.readLine();
-        escritor.println(destinatario); // Enviar el nombre del destinatario al servidor
-
-        System.out.println("Escribe el mensaje:");
-        String mensaje = teclado.readLine();
-        escritor.println(mensaje); // Enviar el mensaje al servidor
-
-        // Esperar respuesta del servidor
-        String respuesta = lector.readLine();
-        System.out.println("Servidor: " + respuesta);
     }
 }
