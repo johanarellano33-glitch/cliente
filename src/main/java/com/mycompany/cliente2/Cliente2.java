@@ -16,15 +16,16 @@ public class Cliente2 {
             while (true) {
                 // Opciones de acción
                 System.out.println("=== BIENVENIDO AL SISTEMA ===");
-                System.out.println("Seleccione una opción:");
-                System.out.println("1. Registrarse");
-                System.out.println("2. Iniciar sesión");
-                System.out.println("3. Salir");
-                System.out.print("Selecciona una opción (1, 2 o 3): ");
+System.out.println("Seleccione una opción:");
+System.out.println("1. Registrarse");
+System.out.println("2. Iniciar sesión");
+System.out.println("3. Dar de baja usuario");   
+System.out.println("4. Salir");                 
+System.out.print("Selecciona una opción (1, 2, 3 o 4): ");
                 String opcion = teclado.readLine();
                 escritor.println(opcion);
                 
-                if (opcion.equals("3")) {
+                if (opcion.equals("4")) {
                     String respuesta = lector.readLine();
                     System.out.println(respuesta);
                     break; // Salir del programa
@@ -38,13 +39,25 @@ public class Cliente2 {
                 System.out.print("Contraseña: ");
                 String contrasena = teclado.readLine();
                 escritor.println(contrasena);
+                // Para dar de baja, mostrar advertencia adicional
+if (opcion.equals("3")) {
+    System.out.println("\n️ ADVERTENCIA: Esta acción eliminará permanentemente tu cuenta y todos tus mensajes.");
+    System.out.print("¿Estás seguro? Escribe 'CONFIRMAR' para continuar: ");
+    String confirmacion = teclado.readLine();
+    
+    if (!confirmacion.equals("CONFIRMAR")) {
+        System.out.println("Operación cancelada.");
+        continue;
+    }
+}
+
                 
                 // Recibir mensaje del servidor
                 String mensaje = lector.readLine();
                 System.out.println("Servidor: " + mensaje);
                 
-                // Si el login fue exitoso
-                if (mensaje.contains("Bienvenido al servidor")) {
+                // Si el login fue exitoso (SOLO para opción 2)
+if (opcion.equals("2") && mensaje.contains("Bienvenido al servidor")) {
                     
                     // Menú de mensajes
                     while (true) {
@@ -117,6 +130,7 @@ public class Cliente2 {
     } else {
         System.out.println(respuesta);
     }
+    
                             
                         } else if (opcionMenu.equals("4")) {
                             // Cerrar sesión
@@ -130,8 +144,16 @@ public class Cliente2 {
                         }
                     }
                 }
+                
+                // Si fue dar de baja exitoso
+                if (opcion.equals("3") && mensaje.contains("dado de baja exitosamente")) {
+                    System.out.println("Tu cuenta ha sido eliminada permanentemente.");
+                    break;
+                }
+                
                 // Si hay error en credenciales, el bucle principal continúa
             }
+            
 
             // Cerrar recursos
             salida.close();
