@@ -48,11 +48,15 @@ public class Cliente2 {
                     
                     // Menú de mensajes
                     while (true) {
-                        System.out.println("\n=== MENÚ DE MENSAJES ===");
-                        System.out.println("1. Ver bandeja de entrada");
-                        System.out.println("2. Enviar mensaje");
-                        System.out.println("3. Cerrar sesión");
-                        System.out.print("Selecciona una opción: ");
+                       System.out.println("1. Ver bandeja de entrada");
+
+                      
+                       System.out.println("2. Enviar mensaje");
+
+                       System.out.println("3. Borrar mensaje");          // ← NUEVA
+
+                       System.out.println("4. Cerrar sesión");          // ← ERA 3
+                       System.out.print("Selecciona una opción: ");
 
                         String opcionMenu = teclado.readLine();
                         escritor.println(opcionMenu);
@@ -91,8 +95,30 @@ public class Cliente2 {
                             } else {
                                 System.out.println("✗ " + respuesta);
                             }
+                            } else if (opcionMenu.equals("3")) {
+    // Borrar mensaje
+    System.out.println("\n=== BORRAR MENSAJE ===");
+    String respuesta = lector.readLine();
+    
+    if (!respuesta.equals("No tienes mensajes para borrar.")) {
+        System.out.println(respuesta);
+        String siguienteMensaje;
+        while ((siguienteMensaje = lector.readLine()) != null && 
+               !siguienteMensaje.equals("FIN_LISTA_BORRAR")) {
+            System.out.println(siguienteMensaje);
+        }
+        
+        System.out.print("Número del mensaje a borrar: ");
+        String numeroMensaje = teclado.readLine();
+        escritor.println(numeroMensaje);
+        
+        String resultado = lector.readLine();
+        System.out.println(resultado.contains("exitosamente") ? "✓ " + resultado : "✗ " + resultado);
+    } else {
+        System.out.println(respuesta);
+    }
                             
-                        } else if (opcionMenu.equals("3")) {
+                        } else if (opcionMenu.equals("4")) {
                             // Cerrar sesión
                             String respuesta = lector.readLine();
                             System.out.println(respuesta);
@@ -115,4 +141,5 @@ public class Cliente2 {
             e.printStackTrace();
         }
     }
+  
 }
