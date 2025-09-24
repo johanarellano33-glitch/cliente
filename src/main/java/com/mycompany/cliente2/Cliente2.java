@@ -19,12 +19,30 @@ public class Cliente2 {
 System.out.println("Seleccione una opción:");
 System.out.println("1. Registrarse");
 System.out.println("2. Iniciar sesión");
-System.out.println("3. Dar de baja usuario");   
-System.out.println("4. Salir");                 
-System.out.print("Selecciona una opción (1, 2, 3 o 4): ");
+System.out.println("3. Dar de baja usuario");
+System.out.println("4. Ver usuarios registrados");  
+System.out.println("5. Salir");                     
+System.out.print("Selecciona una opción (1, 2, 3, 4 o 5): ");
                 String opcion = teclado.readLine();
                 escritor.println(opcion);
+                    
+                if (opcion.equals("4")) {
+    // Ver lista de usuarios - no necesita credenciales
+    System.out.println("\n=== LISTA DE USUARIOS ===");
+    String respuesta;
+    while ((respuesta = lector.readLine()) != null && 
+           !respuesta.equals("FIN_LISTA_USUARIOS")) {
+        System.out.println(respuesta);
+    }
+    continue; // Volver al menú principal
+
+                }
                 
+                if (opcion.equals("5")) {
+                    String respuesta = lector.readLine();
+                    System.out.println(respuesta);
+                    break; // Salir del programa
+                }
                 if (opcion.equals("4")) {
                     String respuesta = lector.readLine();
                     System.out.println(respuesta);
@@ -66,9 +84,9 @@ if (opcion.equals("2") && mensaje.contains("Bienvenido al servidor")) {
                       
                        System.out.println("2. Enviar mensaje");
 
-                       System.out.println("3. Borrar mensaje");          // ← NUEVA
+                       System.out.println("3. Borrar mensaje");         
 
-                       System.out.println("4. Cerrar sesión");          // ← ERA 3
+                       System.out.println("4. Cerrar sesión");        
                        System.out.print("Selecciona una opción: ");
 
                         String opcionMenu = teclado.readLine();
@@ -132,7 +150,7 @@ if (opcion.equals("2") && mensaje.contains("Bienvenido al servidor")) {
     }
     
                             
-                        } else if (opcionMenu.equals("4")) {
+                        } else if (opcionMenu.equals("5")) {
                             // Cerrar sesión
                             String respuesta = lector.readLine();
                             System.out.println(respuesta);
