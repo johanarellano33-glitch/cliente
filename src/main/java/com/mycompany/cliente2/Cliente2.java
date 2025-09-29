@@ -13,26 +13,29 @@ public class Cliente2 {
             BufferedReader lector = new BufferedReader(new InputStreamReader(salida.getInputStream()));
             BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
 // Hilo para escuchar solicitudes especiales del servidor
+// Hilo para escuchar solicitudes especiales del servidor (SOLO durante sesión activa)
 Thread hiloEscucha = new Thread(() -> {
     try {
         String mensaje;
         while ((mensaje = lector.readLine()) != null) {
+            // Solo procesar mensajes especiales, no interferir con el flujo normal
             if (mensaje.startsWith("SOLICITUD_LISTA_ARCHIVOS:")) {
                 manejarSolicitudListaArchivos();
+                continue; // No pasar este mensaje al flujo principal
             } else if (mensaje.startsWith("SOLICITUD_ARCHIVO:")) {
                 String[] partes = mensaje.split(":");
                 if (partes.length >= 3) {
                     manejarSolicitudArchivo(partes[1], partes[2]);
                 }
+                continue; // No pasar este mensaje al flujo principal
             }
+            // Para otros mensajes, no hacer nada aquí (dejar que el flujo principal los maneje)
+            break; // Salir del hilo si no es un mensaje especial
         }
     } catch (IOException e) {
         // Cliente desconectado
     }
 });
-hiloEscucha.setDaemon(true);
-hiloEscucha.start();
-
 
             while (true) {
                 // Opciones de acción
