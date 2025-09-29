@@ -12,30 +12,6 @@ public class Cliente2 {
             PrintWriter escritor = new PrintWriter(salida.getOutputStream(), true);
             BufferedReader lector = new BufferedReader(new InputStreamReader(salida.getInputStream()));
             BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
-// Hilo para escuchar solicitudes especiales del servidor
-// Hilo para escuchar solicitudes especiales del servidor (SOLO durante sesión activa)
-Thread hiloEscucha = new Thread(() -> {
-    try {
-        String mensaje;
-        while ((mensaje = lector.readLine()) != null) {
-            // Solo procesar mensajes especiales, no interferir con el flujo normal
-            if (mensaje.startsWith("SOLICITUD_LISTA_ARCHIVOS:")) {
-                manejarSolicitudListaArchivos();
-                continue; // No pasar este mensaje al flujo principal
-            } else if (mensaje.startsWith("SOLICITUD_ARCHIVO:")) {
-                String[] partes = mensaje.split(":");
-                if (partes.length >= 3) {
-                    manejarSolicitudArchivo(partes[1], partes[2]);
-                }
-                continue; // No pasar este mensaje al flujo principal
-            }
-            // Para otros mensajes, no hacer nada aquí (dejar que el flujo principal los maneje)
-            break; // Salir del hilo si no es un mensaje especial
-        }
-    } catch (IOException e) {
-        // Cliente desconectado
-    }
-});
 
             while (true) {
                 // Opciones de acción
@@ -91,35 +67,140 @@ if (opcion.equals("3")) {
 if (opcion.equals("2") && mensaje.contains("Bienvenido al servidor")) {
                     
                     // Menú de mensajes
-                    while (true) {
-System.out.println("1. Ver bandeja de entrada");
-System.out.println("2. Enviar mensaje");
-System.out.println("3. Borrar mensaje");
-System.out.println("4. Ver usuarios registrados");         
-System.out.println("5. Cerrar sesión");
-System.out.println("6. Listar archivos de otro cliente");
-System.out.println("7. Transferir archivo de otro cliente");
-System.out.print("Selecciona una opción: ");
-
-                        String opcionMenu = teclado.readLine();
-                        escritor.println(opcionMenu);
-
+                    // MENÚ DE MENSAJES
+// MENÚ DE MENSAJES
+boolean sesionActiva = true;
+while (sesionActiva) {
+    
+    // VERIFICAR MENSAJES ESPECIALES ANTES DE MOSTRAR EL MENÚ
+    if (lector.ready()) {
+        String mensajeEspecial = lector.readLine();
+        if (mensajeEspecial.startsWith("LISTAR_ARCHIVOS_REQUEST:")) {
+            String[] partes = mensajeEspecial.split(":");
+            String solicitante = partes.length > 1 ? partes[1] : "desconocido";
+            
+            System.out.println("\n[SOLICITUD RECIBIDA] " + solicitante + " quiere ver tus archivos .txt");
+            System.out.println("Deseas permitir que " + solicitante + " vea tus archivos?");
+            System.out.println("1. Si, mostrar mis archivos");
+            System.out.println("2. No, rechazar solicitud");
+            System.out.print("Selecciona (1 o 2): ");
+            
+            String decision = teclado.readLine();
+            
+            if (decision.equals("1")) {
+                // ACEPTAR - Mostrar archivos locales
+                System.out.println("\nSolicitud aceptada. Mostrando archivos a " + solicitante + ":");
+                
+                File directorio = new File(".");
+                File[] archivos = directorio.listFiles((dir, name) -> name.toLowerCase().endsWith(".txt"));
+                
+                if (archivos != null && archivos.length > 0) {
+                    System.out.println("Archivos .txt enviados:");
+                    for (File archivo : archivos) {
+                        System.out.println("- " + archivo.getName());
+                    }
+                    
+                    // ENVIAR RESPUESTA AL SERVIDOR PARA QUE LA REENVÍE AL SOLICITANTE
+                    escritor.println("RESPUESTA_ARCHIVOS:" + solicitante);
+                    for (File archivo : archivos) {
+                        escritor.println("ARCHIVO:" + archivo.getName());
+                    }
+                    escritor.println("FIN_LISTA_ARCHIVOS");
+                    
+                } else {
+                    System.out.println("No tienes archivos .txt para mostrar");
+                    escritor.println("RESPUESTA_ARCHIVOS:" + solicitante);
+                    escritor.println("NO_ARCHIVOS");
+                    escritor.println("FIN_LISTA_ARCHIVOS");
+                }
+                
+            } else {
+                // RECHAZAR
+                System.out.println("Solicitud rechazada.");
+                escritor.println("RESPUESTA_ARCHIVOS:" + solicitante);
+                escritor.println("SOLICITUD_RECHAZADA");
+                escritor.println("FIN_LISTA_ARCHIVOS");
+            }
+            
+            System.out.println("\nPresiona Enter para continuar...");
+            teclado.readLine();
+            continue;
+        }
+    }
+    
+    System.out.println("1. Ver bandeja de entrada");
+    System.out.println("2. Enviar mensaje");
+    System.out.println("3. Borrar mensaje");
+    System.out.println("4. Ver usuarios registrados");
+    System.out.println("5. Cerrar sesión");
+    System.out.println("6. Listar archivos de otro cliente");
+    System.out.println("7. Transferir archivo de otro cliente");
+    System.out.print("Selecciona una opción: ");
+    
+    String opcionMenu = teclado.readLine();
+    escritor.println(opcionMenu);
+    
+    switch (opcionMenu) {
+    }
+    
                         if (opcionMenu.equals("1")) {
-                            // Ver bandeja de entrada
-                            System.out.println("\n=== BANDEJA DE ENTRADA ===");
-                            String respuesta = lector.readLine();
-                            
-                            if (respuesta.equals("0 mensajes.")) {
-                                System.out.println("No tienes mensajes nuevos.");
-                            } else {
-                                System.out.println(respuesta);
-                                // Leer mensajes adicionales si los hay
-                                String siguienteMensaje;
-                                while ((siguienteMensaje = lector.readLine()) != null && 
-                                       !siguienteMensaje.equals("FIN_MENSAJES")) {
-                                    System.out.println(siguienteMensaje);
-                                }
-                            }
+    // Ver bandeja de entrada
+    System.out.println("\n=== BANDEJA DE ENTRADA ===");
+    String respuesta = lector.readLine();
+    
+    // VERIFICAR SI ES UNA SOLICITUD ESPECIAL
+    if (respuesta.startsWith("LISTAR_ARCHIVOS_REQUEST:")) {
+        String[] partes = respuesta.split(":");
+        String solicitante = partes.length > 1 ? partes[1] : "desconocido";
+        
+        System.out.println("\n[SOLICITUD RECIBIDA] " + solicitante + " quiere ver tus archivos .txt");
+        System.out.println("Deseas permitir que " + solicitante + " vea tus archivos?");
+        System.out.println("1. Si, mostrar mis archivos");
+        System.out.println("2. No, rechazar solicitud");
+        System.out.print("Selecciona (1 o 2): ");
+        
+        String decision = teclado.readLine();
+        
+        if (decision.equals("1")) {
+            System.out.println("\nSolicitud aceptada. Mostrando archivos a " + solicitante + ":");
+            
+            File directorio = new File(".");
+            File[] archivos = directorio.listFiles((dir, name) -> name.toLowerCase().endsWith(".txt"));
+            
+            if (archivos != null && archivos.length > 0) {
+                System.out.println("Archivos .txt enviados:");
+                for (File archivo : archivos) {
+                    System.out.println("- " + archivo.getName());
+                }
+                escritor.println("RESPUESTA_ARCHIVOS:" + solicitante);
+                for (File archivo : archivos) {
+                    escritor.println("ARCHIVO:" + archivo.getName());
+                }
+                escritor.println("FIN_LISTA_ARCHIVOS");
+            } else {
+                System.out.println("No tienes archivos .txt");
+                escritor.println("RESPUESTA_ARCHIVOS:" + solicitante);
+                escritor.println("NO_ARCHIVOS");
+                escritor.println("FIN_LISTA_ARCHIVOS");
+            }
+        } else {
+            System.out.println("Solicitud rechazada.");
+            escritor.println("RESPUESTA_ARCHIVOS:" + solicitante);
+            escritor.println("SOLICITUD_RECHAZADA");
+            escritor.println("FIN_LISTA_ARCHIVOS");
+        }
+        
+    } else if (respuesta.equals("0 mensajes.")) {
+        System.out.println("No tienes mensajes nuevos.");
+    } else {
+        System.out.println(respuesta);
+        String siguienteMensaje;
+        while ((siguienteMensaje = lector.readLine()) != null && 
+               !siguienteMensaje.equals("FIN_MENSAJES")) {
+            System.out.println(siguienteMensaje);
+        }
+    }
+
                             
                         } else if (opcionMenu.equals("2")) {
                             // Enviar mensaje
@@ -169,17 +250,36 @@ System.out.print("Selecciona una opción: ");
            !respuesta.equals("FIN_LISTA_USUARIOS")) {
         System.out.println(respuesta);
     }
-    } else if (opcionMenu.equals("6")) {
+   } else if (opcionMenu.equals("6")) {
     // Listar archivos de otro cliente
     System.out.print("Nombre del cliente: ");
     String clienteObjetivo = teclado.readLine();
     escritor.println(clienteObjetivo);
     
     String respuesta = lector.readLine();
-    if (respuesta.equals("ERROR_USUARIO_NO_EXISTE")) {
-        System.out.println("✗ El usuario no existe.");
-    } else if (respuesta.equals("ERROR_CLIENTE_NO_CONECTADO")) {
-        System.out.println("✗ El cliente no está conectado.");
+    
+    if (respuesta.startsWith("ERROR")) {
+        System.out.println("Error: " + respuesta);
+    } else if (respuesta.contains("Solicitud enviada")) {
+        System.out.println(respuesta);
+        System.out.println("Esperando respuesta de " + clienteObjetivo + "...");
+        
+        // ESPERAR LA RESPUESTA
+        String respuestaArchivos;
+        while ((respuestaArchivos = lector.readLine()) != null) {
+            if (respuestaArchivos.startsWith("ARCHIVO:")) {
+                String nombreArchivo = respuestaArchivos.substring(8);
+                System.out.println("- " + nombreArchivo);
+            } else if (respuestaArchivos.equals("NO_ARCHIVOS")) {
+                System.out.println(clienteObjetivo + " no tiene archivos .txt");
+                break;
+            } else if (respuestaArchivos.equals("SOLICITUD_RECHAZADA")) {
+                System.out.println(clienteObjetivo + " rechazo tu solicitud");
+                break;
+            } else if (respuestaArchivos.equals("FIN_LISTA_ARCHIVOS")) {
+                break;
+            }
+        }
     }
     
 } else if (opcionMenu.equals("7")) {
