@@ -12,6 +12,27 @@ public class Cliente2 {
             PrintWriter escritor = new PrintWriter(salida.getOutputStream(), true);
             BufferedReader lector = new BufferedReader(new InputStreamReader(salida.getInputStream()));
             BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
+// Hilo para escuchar solicitudes especiales del servidor
+Thread hiloEscucha = new Thread(() -> {
+    try {
+        String mensaje;
+        while ((mensaje = lector.readLine()) != null) {
+            if (mensaje.startsWith("SOLICITUD_LISTA_ARCHIVOS:")) {
+                manejarSolicitudListaArchivos();
+            } else if (mensaje.startsWith("SOLICITUD_ARCHIVO:")) {
+                String[] partes = mensaje.split(":");
+                if (partes.length >= 3) {
+                    manejarSolicitudArchivo(partes[1], partes[2]);
+                }
+            }
+        }
+    } catch (IOException e) {
+        // Cliente desconectado
+    }
+});
+hiloEscucha.setDaemon(true);
+hiloEscucha.start();
+
 
             while (true) {
                 // Opciones de acción
@@ -72,7 +93,9 @@ System.out.println("1. Ver bandeja de entrada");
 System.out.println("2. Enviar mensaje");
 System.out.println("3. Borrar mensaje");
 System.out.println("4. Ver usuarios registrados");         
-System.out.println("5. Cerrar sesión");        
+System.out.println("5. Cerrar sesión");
+System.out.println("6. Listar archivos de otro cliente");
+System.out.println("7. Transferir archivo de otro cliente");
 System.out.print("Selecciona una opción: ");
 
                         String opcionMenu = teclado.readLine();
@@ -143,6 +166,31 @@ System.out.print("Selecciona una opción: ");
            !respuesta.equals("FIN_LISTA_USUARIOS")) {
         System.out.println(respuesta);
     }
+    } else if (opcionMenu.equals("6")) {
+    // Listar archivos de otro cliente
+    System.out.print("Nombre del cliente: ");
+    String clienteObjetivo = teclado.readLine();
+    escritor.println(clienteObjetivo);
+    
+    String respuesta = lector.readLine();
+    if (respuesta.equals("ERROR_USUARIO_NO_EXISTE")) {
+        System.out.println("✗ El usuario no existe.");
+    } else if (respuesta.equals("ERROR_CLIENTE_NO_CONECTADO")) {
+        System.out.println("✗ El cliente no está conectado.");
+    }
+    
+} else if (opcionMenu.equals("7")) {
+    // Transferir archivo de otro cliente
+    System.out.print("Cliente origen: ");
+    String clienteOrigen = teclado.readLine();
+    escritor.println(clienteOrigen);
+    
+    System.out.print("Nombre del archivo: ");
+    String archivo = teclado.readLine();
+    escritor.println(archivo);
+    
+    String respuesta = lector.readLine();
+    System.out.println(respuesta);
                              
                         } else if (opcionMenu.equals("5")) {
                             // Cerrar sesión
@@ -175,5 +223,39 @@ System.out.print("Selecciona una opción: ");
             e.printStackTrace();
         }
     }
+    private static void manejarSolicitudListaArchivos() {
+    System.out.println("\n[INFO] Otro cliente solicita la lista de tus archivos .txt");
+    File directorio = new File(".");
+    File[] archivos = directorio.listFiles((dir, name) -> name.toLowerCase().endsWith(".txt"));
+    
+    if (archivos != null && archivos.length > 0) {
+        System.out.println("Archivos .txt encontrados:");
+        for (File archivo : archivos) {
+            System.out.println("- " + archivo.getName());
+        }
+    } else {
+        System.out.println("No se encontraron archivos .txt");
+    }
+}
+
+private static void manejarSolicitudArchivo(String nombreArchivo, String solicitante) {
+    System.out.println("\n[INFO] " + solicitante + " solicita el archivo: " + nombreArchivo);
+    File archivo = new File(nombreArchivo);
+    
+    if (archivo.exists() && archivo.isFile() && nombreArchivo.toLowerCase().endsWith(".txt")) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(archivo))) {
+            System.out.println("Enviando contenido del archivo " + nombreArchivo + ":");
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                System.out.println(linea);
+            }
+            System.out.println("[Archivo enviado exitosamente]");
+        } catch (IOException e) {
+            System.out.println("Error al leer el archivo: " + e.getMessage());
+        }
+    } else {
+        System.out.println("El archivo no existe o no es un archivo .txt");
+    }
+}
   
 }
